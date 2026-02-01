@@ -252,6 +252,97 @@ class AnthropicClient(LLMClient):
             raise LLMAPIError(f"Anthropic API call failed: {e}")
 
 
+class DeepSeekClient(LLMClient):
+    """DeepSeek API client (compatible with OpenAI API)"""
+
+    def __init__(self, api_key: Optional[str] = None, model: Optional[str] = None):
+        """
+        Initialize DeepSeek client
+
+        Args:
+            api_key: DeepSeek API key (defaults to settings)
+            model: Model name (defaults to "deepseek-chat")
+        """
+        self.api_key = api_key or settings.deepseek_api_key
+        if not self.api_key:
+            raise ValueError("DeepSeek API key not configured")
+
+        self.model = model or "deepseek-chat"
+        # DeepSeek uses OpenAI-compatible API
+        self.client = OpenAI(
+            api_key=self.api_key,
+            base_url="https://api.deepseek.com"
+        )
+        logger.info(f"Initialized DeepSeek client with model: {self.model}")
+
+    def generate(
+        self,
+        prompt: str,
+        system_prompt: Optional[str] = None,
+        temperature: float = 0.7,
+        max_tokens: int = 4000,
+    ) -> str:
+        """Generate text from DeepSeek API"""
+        try:
+            messages = []
+            if system_prompt:
+                messages.append({"role": "system", "content": system_prompt})
+            messages.append({"role": "user", "content": prompt})
+
+            logger.debug(f"Calling DeepSeek API with model: {self.model}")
+
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens,
+            )
+
+            content = response.choices[0].message.content
+            logger.info(f"Generated {len(content)} characters from DeepSeek")
+            return content
+
+        except Exception as e:
+            logger.error(f"DeepSeek API error: {e}")
+            raise LLMAPIError(f"DeepSeek API call failed: {e}")
+
+    def generate_json(
+        self,
+        prompt: str,
+        system_prompt: Optional[str] = None,
+        temperature: float = 0.7,
+        max_tokens: int = 4000,
+    ) -> Dict[str, Any]:
+        """Generate structured JSON from DeepSeek API"""
+        try:
+            messages = []
+            if system_prompt:
+                messages.append({"role": "system", "content": system_prompt})
+            messages.append({"role": "user", "content": prompt})
+
+            logger.debug(f"Calling DeepSeek API (JSON mode) with model: {self.model}")
+
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                response_format={"type": "json_object"},
+            )
+
+            content = response.choices[0].message.content
+            result = json.loads(content)
+            logger.info(f"Generated JSON with {len(result)} keys from DeepSeek")
+            return result
+
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse DeepSeek JSON response: {e}")
+            raise LLMAPIError(f"Invalid JSON response: {e}")
+        except Exception as e:
+            logger.error(f"DeepSeek API error: {e}")
+            raise LLMAPIError(f"DeepSeek API call failed: {e}")
+
+
 def create_llm_client(
     provider: str = "openai", api_key: Optional[str] = None, model: Optional[str] = None
 ) -> LLMClient:
@@ -259,7 +350,7 @@ def create_llm_client(
     Factory function to create LLM client
 
     Args:
-        provider: LLM provider ("openai" or "anthropic")
+        provider: LLM provider ("openai", "anthropic", or "deepseek")
         api_key: API key (optional, uses settings if not provided)
         model: Model name (optional, uses default if not provided)
 
@@ -275,5 +366,7 @@ def create_llm_client(
         return OpenAIClient(api_key=api_key, model=model)
     elif provider == "anthropic":
         return AnthropicClient(api_key=api_key, model=model)
+    elif provider == "deepseek":
+        return DeepSeekClient(api_key=api_key, model=model)
     else:
-        raise ValueError(f"Unsupported LLM provider: {provider}")
+        raise ValueError(f"Unsupported LLM provider: {provider}. Use 'openai', 'anthropic', or 'deepseek'.")

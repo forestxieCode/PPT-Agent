@@ -6,12 +6,12 @@ An AI-powered agent for automated PowerPoint presentation generation. Simply des
 
 ## ✨ Features
 
-- 🤖 **AI-driven generation** - Powered by GPT-4 or Claude
+- 🤖 **AI-driven generation** - Powered by GPT-4, Claude, or DeepSeek
 - 📊 **Automatic structure** - Smart slide layout selection
 - 🎨 **Template-based styling** - Professional, consistent design
 - 🔄 **Refinement support** - Iteratively improve your presentation
 - 📝 **Multiple slide types** - Cover, TOC, content variations, ending
-- 🌐 **Multi-LLM support** - OpenAI and Anthropic
+- 🌐 **Multi-LLM support** - OpenAI, Anthropic, and DeepSeek
 - 💾 **Real PPTX output** - Compatible with PowerPoint/WPS
 - 🖥️ **CLI tool** - Easy-to-use command line interface
 
@@ -43,6 +43,8 @@ cp .env.example .env
 OPENAI_API_KEY=sk-your-key-here
 # or
 ANTHROPIC_API_KEY=sk-ant-your-key-here
+# or
+DEEPSEEK_API_KEY=sk-your-deepseek-key-here
 ```
 
 ### Usage
@@ -50,8 +52,14 @@ ANTHROPIC_API_KEY=sk-ant-your-key-here
 #### CLI (Recommended)
 
 ```bash
-# Generate a presentation
+# Generate with OpenAI (default)
 python -m src.cli generate "年终述职报告" --author "张三"
+
+# Generate with Anthropic Claude
+python -m src.cli generate "年终述职报告" --provider anthropic
+
+# Generate with DeepSeek
+python -m src.cli generate "年终述职报告" --provider deepseek
 
 # List available templates
 python -m src.cli templates
@@ -71,8 +79,14 @@ python -m src.cli --help
 ```python
 from src.agent import PPTAgent
 
-# Initialize agent
+# Initialize with OpenAI (default)
 agent = PPTAgent(llm_provider='openai')
+
+# Or use Anthropic Claude
+agent = PPTAgent(llm_provider='anthropic')
+
+# Or use DeepSeek
+agent = PPTAgent(llm_provider='deepseek')
 
 # Generate presentation
 result = agent.generate_presentation(
@@ -140,7 +154,7 @@ PPT-Agent/
 │   │   └── validator.py     # Template validation
 │   ├── outline/             # ✅ Outline generation
 │   │   ├── models.py        # Outline data models
-│   │   ├── llm_client.py    # LLM clients (OpenAI/Anthropic)
+│   │   ├── llm_client.py    # LLM clients (OpenAI/Anthropic/DeepSeek)
 │   │   ├── prompts.py       # Prompt templates
 │   │   └── generator.py     # Outline generator
 │   ├── generator/           # ✅ PPT generation engine
@@ -230,7 +244,7 @@ pytest tests/ --cov=src --cov-report=html
 pytest tests/unit/test_template_models.py -v
 ```
 
-**Current Coverage**: 68% (49 tests passing)
+**Current Coverage**: 70% (57 tests passing)
 
 ## 📋 Commands
 
@@ -245,7 +259,7 @@ Options:
   --author, -a TEXT          Author name
   --max-slides, -m INTEGER   Maximum slides
   --output, -o PATH          Output directory
-  --provider, -p             LLM provider (openai/anthropic)
+  --provider, -p             LLM provider (openai/anthropic/deepseek)
   --temperature FLOAT        LLM temperature
   --no-outline              Don't save outline JSON
 

@@ -11,6 +11,7 @@ class Settings(BaseSettings):
 
     openai_api_key: Optional[str] = None
     anthropic_api_key: Optional[str] = None
+    deepseek_api_key: Optional[str] = None
     default_model: str = "gpt-4"
     template_dir: str = "templates/json"
     output_dir: str = "output"

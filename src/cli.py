@@ -57,8 +57,8 @@ def cli():
 @click.option(
     "--provider",
     "-p",
-    help="LLM provider (openai or anthropic)",
-    type=click.Choice(["openai", "anthropic"]),
+    help="LLM provider (openai, anthropic, or deepseek)",
+    type=click.Choice(["openai", "anthropic", "deepseek"]),
     default="openai",
 )
 @click.option(
@@ -192,7 +192,7 @@ def generate(
     "--provider",
     "-p",
     help="LLM provider",
-    type=click.Choice(["openai", "anthropic"]),
+    type=click.Choice(["openai", "anthropic", "deepseek"]),
     default="openai",
 )
 def refine(outline_file, feedback, output, provider):
